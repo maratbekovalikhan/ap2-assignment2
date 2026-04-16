@@ -1,14 +1,16 @@
-# AP2 Assignment 2 - gRPC Migration & Contract-First Development
+# AP2 Assignment 2: gRPC Migration and Contract-First Development
 
-This repository contains a complete sample solution for the Assignment 2 requirements:
+This project is a complete solution for the Assignment 2 requirements from Advanced Programming 2.
 
-- `Order Service` keeps its external REST API with Gin.
-- `Order Service` calls `Payment Service` internally via gRPC.
-- `Payment Service` exposes a gRPC server with unary `ProcessPayment`.
-- `Order Service` exposes a gRPC server with server-side streaming `SubscribeToOrderUpdates`.
-- Order status streaming is tied to real database updates in SQLite.
-- Configuration is loaded from environment variables.
-- A GitHub Actions workflow template is included for contract-first remote generation.
+The system demonstrates the following:
+
+- `Order Service` keeps its external REST API using Gin.
+- `Order Service` communicates with `Payment Service` internally via gRPC.
+- `Payment Service` exposes a unary gRPC method named `ProcessPayment`.
+- `Order Service` exposes a server-side streaming gRPC method named `SubscribeToOrderUpdates`.
+- Order status streaming is connected to real database updates in SQLite.
+- Service configuration is loaded from environment variables.
+- A GitHub Actions template is included for a contract-first remote generation workflow.
 
 ## Project Structure
 
@@ -47,17 +49,16 @@ flowchart LR
     D -->|"real DB status update"| F
 ```
 
-## Proto Repositories
+## Contract-First Repositories
 
-To match the assignment exactly, use:
+To follow the assignment requirements, the project uses separate repositories for contracts and generated code:
 
 - Repository A: proto-only repository
 - Repository B: generated Go code repository
 
-Update this README with your real GitHub links before submission:
-
-- Proto Repository: `https://github.com/your-user/your-proto-repo`
-- Generated Code Repository: `https://github.com/your-user/your-generated-repo`
+- Main Project Repository: `https://github.com/maratbekovalikhan/ap2-assignment2`
+- Proto Repository: `https://github.com/maratbekovalikhan/ap2-protos`
+- Generated Code Repository: `https://github.com/maratbekovalikhan/ap2-generated`
 
 The included workflow in `.github/workflows/proto-generate.yml` is a template for the remote generation flow.
 
@@ -86,7 +87,7 @@ protoc -I ./proto \
   proto/order/v1/order.proto
 ```
 
-## Run Services
+## How to Run the Services
 
 1. Start Payment Service:
 
@@ -100,7 +101,7 @@ go run ./cmd/payment-service
 go run ./cmd/order-service
 ```
 
-3. Create an order:
+3. Create an order through the REST API:
 
 ```bash
 curl -X POST http://localhost:8080/orders \
@@ -112,13 +113,13 @@ curl -X POST http://localhost:8080/orders \
   }'
 ```
 
-4. Subscribe to updates:
+4. Subscribe to order status updates through gRPC:
 
 ```bash
 go run ./cmd/order-stream-client --order-id=<ORDER_ID>
 ```
 
-5. Update order status to prove DB-backed streaming:
+5. Update the order status to demonstrate DB-backed streaming:
 
 ```bash
 curl -X PATCH http://localhost:8080/orders/<ORDER_ID>/status \
@@ -126,9 +127,9 @@ curl -X PATCH http://localhost:8080/orders/<ORDER_ID>/status \
   -d '{"status":"CANCELLED"}'
 ```
 
-When the status is updated in SQLite, the gRPC stream immediately pushes the update to the streaming client.
+When the order status is updated in SQLite, the gRPC stream immediately pushes the new status to the subscriber.
 
-If port `8080` is already busy on your laptop, run the Order Service with another HTTP port:
+If port `8080` is already in use on your machine, run the Order Service with another HTTP port:
 
 ```bash
 ORDER_HTTP_PORT=18080 go run ./cmd/order-service
@@ -136,9 +137,41 @@ ORDER_HTTP_PORT=18080 go run ./cmd/order-service
 
 ## Requirements Coverage
 
-- Contract-First Flow: `proto/*.proto`, generated code under `pkg/gen`, workflow template for remote generation
-- gRPC Implementation: unary gRPC in Payment, gRPC client in Order, streaming gRPC in Order
-- Proto Design & Config: proper `package`, `go_package`, `google.protobuf.Timestamp`, env-based addresses
-- Streaming & DB Integration: stream notification is triggered only after successful DB status update
-- Documentation & Git: README, architecture diagram, and commands to demonstrate the migration
-- Bonus: Payment service unary interceptor logs every incoming request with method name and duration
+## Evolution / Assignment 1 (REST)
+
+This repository contains two logical versions of the assignment:
+
+- Assignment 2 (gRPC) is the primary implementation on the `main` branch.
+- Assignment 1 (original REST solution) is preserved in the branch named `assignment1-rest`.
+
+You can view the REST solution on GitHub here:
+
+https://github.com/maratbekovalikhan/ap2-assignment2/tree/assignment1-rest
+
+How to run Assignment 1 (REST) locally
+
+1. Order Service (A1)
+
+```bash
+cd assignment1-rest/order-service
+go run ./cmd
+```
+
+2. Payment Service (A1)
+
+```bash
+cd assignment1-rest/payment-service
+go run ./cmd
+```
+
+Notes:
+- Each A1 service has its own `go.mod` so it is easiest to `cd` into the service folder before running.
+- The `assignment1-rest` branch is intended to show the project evolution (REST → gRPC). The instructor can compare branches or open a pull request to review the changes.
+
+
+- Contract-First Flow: `proto/*.proto`, generated code under `pkg/gen`, and a workflow template for remote generation
+- gRPC Implementation: unary gRPC in `Payment Service`, gRPC client inside `Order Service`, and server-side streaming in `Order Service`
+- Proto Design and Configuration: proper `package`, `go_package`, `google.protobuf.Timestamp`, and environment-based addresses
+- Streaming and Database Integration: stream notifications are triggered only after a successful database status update
+- Documentation and Git: README, architecture diagram, and clear commands to demonstrate the migration
+- Bonus Requirement: `Payment Service` includes a unary interceptor that logs method name and duration
