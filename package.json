@@ -1,0 +1,17 @@
+{
+  "name": "lootforge-protocol",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "subgraph"
+  ],
+  "scripts": {
+    "build:contracts": "forge build",
+    "test": "forge test -vvv",
+    "coverage": "forge coverage --report summary --report lcov",
+    "fmt": "forge fmt",
+    "fmt:check": "forge fmt --check",
+    "lint:sol": "forge fmt --check",
+    "lint": "npm run lint:sol"
+  }
+}

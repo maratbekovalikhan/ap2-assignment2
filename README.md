@@ -1,177 +1,90 @@
-# AP2 Assignment 2: gRPC Migration and Contract-First Development
+# LootForge Protocol
 
-This project is a complete solution for the Assignment 2 requirements from Advanced Programming 2.
+LootForge is our **Blockchain Technologies 2 Final Project** for **Option B - GameFi Economy**.
 
-The system demonstrates the following:
+The protocol combines all required domains from the course into one production-style decentralized system:
 
-- `Order Service` keeps its external REST API using Gin.
-- `Order Service` communicates with `Payment Service` internally via gRPC.
-- `Payment Service` exposes a unary gRPC method named `ProcessPayment`.
-- `Order Service` exposes a server-side streaming gRPC method named `SubscribeToOrderUpdates`.
-- Order status streaming is connected to real database updates in SQLite.
-- Service configuration is loaded from environment variables.
-- A GitHub Actions template is included for a contract-first remote generation workflow.
+- `ERC-1155` in-game item economy
+- crafting with on-chain recipes
+- constant-product AMM for fungible resources
+- `ERC-721` hero NFT rental vault
+- Chainlink VRF loot drops
+- DAO governance over gameplay and protocol parameters
+- L2-oriented deployment pipeline
 
-## Project Structure
+## Team
+
+- **Alikhan Maratbekov**
+- **Miras Khaval**
+- **Nurassyl Mukhtaruly**
+
+Detailed ownership is documented in [docs/team-ownership.md](/Users/arslanmaratbekov/Documents/New project/docs/team-ownership.md).
+
+## Repository Layout
 
 ```text
-cmd/
-  order-service/
-  payment-service/
-  order-stream-client/
-internal/
-  config/
-  order/
-    delivery/
-    domain/
-    repository/
-    stream/
-    usecase/
-  payment/
-    delivery/
-    domain/
-    usecase/
-  shared/
-proto/
-  order/v1/
-  payment/v1/
-pkg/gen/
+src/        Solidity contracts
+test/       Foundry tests
+script/     deployment, upgrade, verification scripts
+frontend/   React + Wagmi/Viem dApp scaffold
+subgraph/   The Graph scaffold
+docs/       architecture, requirement mapping, ownership docs
+lib/        Foundry dependencies
 ```
 
-## Architecture
+## Core Smart Contracts
 
-```mermaid
-flowchart LR
-    A["REST Client / Postman"] -->|"POST /orders"| B["Order Service (Gin REST)"]
-    B -->|"gRPC unary: ProcessPayment"| C["Payment Service (gRPC Server)"]
-    B --> D[("SQLite Orders DB")]
-    E["Streaming Client"] -->|"gRPC stream: SubscribeToOrderUpdates"| F["Order Service (gRPC Server)"]
-    D -->|"real DB status update"| F
-```
+- [src/core/GameGovernanceToken.sol](/Users/arslanmaratbekov/Documents/New project/src/core/GameGovernanceToken.sol): `ERC20Votes` + `ERC20Permit`
+- [src/core/GameItems1155Upgradeable.sol](/Users/arslanmaratbekov/Documents/New project/src/core/GameItems1155Upgradeable.sol): upgradeable `ERC-1155`
+- [src/core/GameItems1155V2.sol](/Users/arslanmaratbekov/Documents/New project/src/core/GameItems1155V2.sol): documented V1 -> V2 upgrade path
+- [src/core/HeroNFT.sol](/Users/arslanmaratbekov/Documents/New project/src/core/HeroNFT.sol): rentable hero NFT collection
+- [src/amm/ResourceFactory.sol](/Users/arslanmaratbekov/Documents/New project/src/amm/ResourceFactory.sol): `CREATE` + `CREATE2` factory
+- [src/amm/ResourcePair.sol](/Users/arslanmaratbekov/Documents/New project/src/amm/ResourcePair.sol): constant-product AMM with 0.3% fee
+- [src/crafting/CraftingStation.sol](/Users/arslanmaratbekov/Documents/New project/src/crafting/CraftingStation.sol): recipe registry and crafting execution
+- [src/rentals/HeroRentalVault.sol](/Users/arslanmaratbekov/Documents/New project/src/rentals/HeroRentalVault.sol): NFT custody and rental lifecycle
+- [src/rentals/RentalRevenueVault.sol](/Users/arslanmaratbekov/Documents/New project/src/rentals/RentalRevenueVault.sol): `ERC-4626` rental revenue vault
+- [src/loot/LootDropManager.sol](/Users/arslanmaratbekov/Documents/New project/src/loot/LootDropManager.sol): Chainlink VRF loot distribution
+- [src/governance/GameGovernor.sol](/Users/arslanmaratbekov/Documents/New project/src/governance/GameGovernor.sol): OZ Governor + Timelock stack
+- [src/oracle/PriceOracleAdapter.sol](/Users/arslanmaratbekov/Documents/New project/src/oracle/PriceOracleAdapter.sol): stale-price-protected Chainlink adapter
 
-## Contract-First Repositories
+## Requirement Coverage
 
-To follow the assignment requirements, the project uses separate repositories for contracts and generated code:
+The rubric mapping lives in [docs/requirements-matrix.md](/Users/arslanmaratbekov/Documents/New project/docs/requirements-matrix.md).
 
-- Repository A: proto-only repository
-- Repository B: generated Go code repository
+The current architecture summary lives in [docs/architecture.md](/Users/arslanmaratbekov/Documents/New project/docs/architecture.md).
 
-- Main Project Repository: `https://github.com/maratbekovalikhan/ap2-assignment2`
-- Proto Repository: `https://github.com/maratbekovalikhan/ap2-protos`
-- Generated Code Repository: `https://github.com/maratbekovalikhan/ap2-generated`
-
-The included workflow in `.github/workflows/proto-generate.yml` is a template for the remote generation flow.
-
-## Environment Variables
-
-Copy `.env.example` to `.env`.
-
-```env
-ORDER_HTTP_PORT=8080
-ORDER_GRPC_HOST=localhost
-ORDER_GRPC_PORT=50052
-PAYMENT_GRPC_HOST=localhost
-PAYMENT_GRPC_PORT=50051
-ORDER_DATABASE_PATH=data/orders.db
-PAYMENT_DEFAULT_MESSAGE=payment processed successfully
-```
-
-## Generate Protobuf Code
+## Local Commands
 
 ```bash
-export PATH="$PATH:$(go env GOPATH)/bin"
-protoc -I ./proto \
-  --go_out=. --go_opt=module=github.com/arslanmaratbekov/ap2-assignment2 \
-  --go-grpc_out=. --go-grpc_opt=module=github.com/arslanmaratbekov/ap2-assignment2 \
-  proto/payment/v1/payment.proto \
-  proto/order/v1/order.proto
+forge build
+forge test --offline --suppress-successful-traces
+forge fmt --check
 ```
 
-## How to Run the Services
+## Current Status
 
-1. Start Payment Service:
+Already implemented in the repository:
 
-```bash
-go run ./cmd/payment-service
-```
+- root-level Foundry project scaffold
+- starter GameFi contract system
+- upgradeable contract path
+- governance/token foundation
+- AMM foundation
+- oracle adapter
+- VRF loot manager scaffold
+- rental vault scaffold
+- CI workflow for contracts + Slither
+- initial passing test suite
 
-2. Start Order Service:
+## Next Milestones
 
-```bash
-go run ./cmd/order-service
-```
+1. Expand tests to hit the full course minimums: unit, fuzz, invariant, fork.
+2. Complete governance lifecycle tests: propose -> vote -> queue -> execute.
+3. Finish frontend wallet, governance, AMM, crafting, and rental flows.
+4. Complete subgraph mappings and GraphQL query examples.
+5. Deploy and verify on an L2 testnet.
+6. Produce audit, gas, and architecture reports for submission.
 
-3. Create an order through the REST API:
+## Note
 
-```bash
-curl -X POST http://localhost:8080/orders \
-  -H "Content-Type: application/json" \
-  -d '{
-    "user_id":"user-1",
-    "amount":150,
-    "currency":"usd"
-  }'
-```
-
-4. Subscribe to order status updates through gRPC:
-
-```bash
-go run ./cmd/order-stream-client --order-id=<ORDER_ID>
-```
-
-5. Update the order status to demonstrate DB-backed streaming:
-
-```bash
-curl -X PATCH http://localhost:8080/orders/<ORDER_ID>/status \
-  -H "Content-Type: application/json" \
-  -d '{"status":"CANCELLED"}'
-```
-
-When the order status is updated in SQLite, the gRPC stream immediately pushes the new status to the subscriber.
-
-If port `8080` is already in use on your machine, run the Order Service with another HTTP port:
-
-```bash
-ORDER_HTTP_PORT=18080 go run ./cmd/order-service
-```
-
-## Requirements Coverage
-
-## Evolution / Assignment 1 (REST)
-
-This repository contains two logical versions of the assignment:
-
-- Assignment 2 (gRPC) is the primary implementation on the `main` branch.
-- Assignment 1 (original REST solution) is preserved in the branch named `assignment1-rest`.
-
-You can view the REST solution on GitHub here:
-
-https://github.com/maratbekovalikhan/ap2-assignment2/tree/assignment1-rest
-
-How to run Assignment 1 (REST) locally
-
-1. Order Service (A1)
-
-```bash
-cd assignment1-rest/order-service
-go run ./cmd
-```
-
-2. Payment Service (A1)
-
-```bash
-cd assignment1-rest/payment-service
-go run ./cmd
-```
-
-Notes:
-- Each A1 service has its own `go.mod` so it is easiest to `cd` into the service folder before running.
-- The `assignment1-rest` branch is intended to show the project evolution (REST → gRPC). The instructor can compare branches or open a pull request to review the changes.
-
-
-- Contract-First Flow: `proto/*.proto`, generated code under `pkg/gen`, and a workflow template for remote generation
-- gRPC Implementation: unary gRPC in `Payment Service`, gRPC client inside `Order Service`, and server-side streaming in `Order Service`
-- Proto Design and Configuration: proper `package`, `go_package`, `google.protobuf.Timestamp`, and environment-based addresses
-- Streaming and Database Integration: stream notifications are triggered only after a successful database status update
-- Documentation and Git: README, architecture diagram, and clear commands to demonstrate the migration
-- Bonus Requirement: `Payment Service` includes a unary interceptor that logs method name and duration
+Some older coursework files are still present in this repository, but the active final project for this capstone is now the LootForge blockchain stack described above.

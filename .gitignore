@@ -1,3 +1,17 @@
 .env
 .gocache/
 data/
+.venv/
+__pycache__/
+.DS_Store
+vn_game/data/savegame.json
+node_modules/
+cache/
+out/
+broadcast/
+coverage/
+frontend/node_modules/
+frontend/dist/
+subgraph/generated/
+subgraph/build/
+gamefi-economy/

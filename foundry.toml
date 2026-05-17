@@ -1,0 +1,21 @@
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.24"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 20_000
+via_ir = true
+bytecode_hash = "none"
+gas_reports = ["*"]
+fs_permissions = [{ access = "read-write", path = "./" }]
+
+[fuzz]
+runs = 256
+
+[invariant]
+runs = 128
+depth = 32

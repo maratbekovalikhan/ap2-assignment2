@@ -1,0 +1,71 @@
+specVersion: 1.2.0
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ResourcePair
+    network: base-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: ResourcePair
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - ResourcePair
+        - Swap
+      abis:
+        - name: ResourcePair
+          file: ./abis/ResourcePair.json
+      eventHandlers:
+        - event: SwapExecuted(indexed address,indexed address,uint256,uint256,address)
+          handler: handleSwapExecuted
+      file: ./src/mapping.ts
+
+  - kind: ethereum
+    name: CraftingStation
+    network: base-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: CraftingStation
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - CraftEvent
+      abis:
+        - name: CraftingStation
+          file: ./abis/CraftingStation.json
+      eventHandlers:
+        - event: Crafted(indexed address,indexed uint256,uint256)
+          handler: handleCrafted
+      file: ./src/mapping.ts
+
+  - kind: ethereum
+    name: HeroRentalVault
+    network: base-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: HeroRentalVault
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - HeroRental
+      abis:
+        - name: HeroRentalVault
+          file: ./abis/HeroRentalVault.json
+      eventHandlers:
+        - event: HeroDeposited(indexed uint256,indexed address,uint256,uint256)
+          handler: handleHeroDeposited
+        - event: RentalStarted(indexed uint256,indexed address,uint256,uint256,uint256)
+          handler: handleRentalStarted
+        - event: RentalClosed(indexed uint256,indexed address,bool)
+          handler: handleRentalClosed
+      file: ./src/mapping.ts

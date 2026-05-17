@@ -1,0 +1,75 @@
+type ResourcePair @entity {
+  id: ID!
+  token0: Bytes!
+  token1: Bytes!
+  reserve0: BigInt!
+  reserve1: BigInt!
+  totalLiquidity: BigInt!
+}
+
+type LiquidityPosition @entity {
+  id: ID!
+  pair: ResourcePair!
+  provider: Bytes!
+  liquidityMinted: BigInt!
+  liquidityBurned: BigInt!
+  updatedAt: BigInt!
+}
+
+type Swap @entity {
+  id: ID!
+  pair: ResourcePair!
+  trader: Bytes!
+  tokenIn: Bytes!
+  amountIn: BigInt!
+  amountOut: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type CraftEvent @entity {
+  id: ID!
+  player: Bytes!
+  itemId: BigInt!
+  itemAmount: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type HeroRental @entity {
+  id: ID!
+  heroId: BigInt!
+  owner: Bytes!
+  renter: Bytes
+  dailyFee: BigInt!
+  expiresAt: BigInt
+  active: Boolean!
+}
+
+type LootDrop @entity {
+  id: ID!
+  requestId: BigInt!
+  player: Bytes!
+  chestType: BigInt!
+  itemId: BigInt!
+  amount: BigInt!
+  txHash: Bytes!
+}
+
+type ProposalSnapshot @entity {
+  id: ID!
+  proposer: Bytes!
+  state: String!
+  description: String!
+  createdAt: BigInt!
+  executedAt: BigInt
+}
+
+type VoteRecord @entity {
+  id: ID!
+  proposal: ProposalSnapshot!
+  voter: Bytes!
+  support: Int!
+  weight: BigInt!
+  timestamp: BigInt!
+}

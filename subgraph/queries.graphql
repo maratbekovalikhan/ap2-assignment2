@@ -1,0 +1,57 @@
+# 1. Active governance proposals with current state
+query ActiveProposals {
+  proposalSnapshots(first: 10, orderBy: createdAt, orderDirection: desc, where: { state_in: ["Pending", "Active", "Succeeded", "Queued"] }) {
+    id
+    proposer
+    state
+    description
+    createdAt
+  }
+}
+
+# 2. Latest swaps for the AMM activity page
+query RecentSwaps {
+  swaps(first: 20, orderBy: timestamp, orderDirection: desc) {
+    id
+    trader
+    tokenIn
+    amountIn
+    amountOut
+    txHash
+  }
+}
+
+# 3. Pool-level reserve and liquidity snapshot
+query Pools {
+  resourcePairs(first: 10, orderBy: totalLiquidity, orderDirection: desc) {
+    id
+    token0
+    token1
+    reserve0
+    reserve1
+    totalLiquidity
+  }
+}
+
+# 4. Current hero rental listings
+query HeroRentals {
+  heroRentals(first: 20, where: { active: true }) {
+    id
+    heroId
+    owner
+    renter
+    dailyFee
+    expiresAt
+  }
+}
+
+# 5. Recent crafting events for player progression
+query RecentCrafts {
+  craftEvents(first: 20, orderBy: timestamp, orderDirection: desc) {
+    id
+    player
+    itemId
+    itemAmount
+    txHash
+  }
+}
